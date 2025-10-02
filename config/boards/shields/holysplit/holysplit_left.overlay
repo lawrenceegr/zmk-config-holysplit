@@ -1,4 +1,5 @@
 #include "holysplit.dtsi"
+#include <dt-bindings/zmk/led.h>
 
 &kscan0 {
 	row-gpios
@@ -26,9 +27,13 @@
 / {
 	vbatt: vbatt {
 		compatible = "zmk,battery-voltage-divider";
-		io-channels = <&adc 7>;  // P0.31 = AIN7
+		io-channels = <&adc 7>;
 		output-ohms = <2000000>;
 		full-ohms = <(2000000 + 806000)>;
+	};
+
+	chosen {
+		zmk,underglow = &led_strip;
 	};
 };
 
@@ -42,49 +47,24 @@
 		zephyr,gain = "ADC_GAIN_1_6";
 		zephyr,reference = "ADC_REF_INTERNAL";
 		zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
-		zephyr,input-positive = <NRF_SAADC_AIN7>;  // P0.31
+		zephyr,input-positive = <NRF_SAADC_AIN7>;
 		zephyr,resolution = <12>;
 	};
 };
 
-// SPI for RGB LEDs (SK6812 uses SPI to emulate WS2812 protocol)
 &spi3 {
 	compatible = "nordic,nrf-spim";
 	status = "okay";
-
-	pinctrl-0 = <&spi3_default>;
-	pinctrl-1 = <&spi3_sleep>;
-	pinctrl-names = "default", "sleep";
-
+	mosi-pin = <14>;
+	// SCK and MISO not needed for WS2812
+	
 	led_strip: ws2812@0 {
 		compatible = "worldsemi,ws2812-spi";
 		reg = <0>;
 		spi-max-frequency = <4000000>;
-
-		/* Adjust this to match your actual LED count */
-		chain-length = <60>;  // Change to your actual number of LEDs
-		
+		chain-length = <60>;
 		spi-one-frame = <0x70>;
 		spi-zero-frame = <0x40>;
-		
-		color-mapping = <LED_COLOR_ID_GREEN
-				 LED_COLOR_ID_RED
-				 LED_COLOR_ID_BLUE>;
-	};
-};
-
-// Pinctrl configuration for SPI3 (RGB LEDs on P0.14)
-&pinctrl {
-	spi3_default: spi3_default {
-		group1 {
-			psels = <NRF_PSEL(SPIM_MOSI, 0, 14)>;  // P0.14 for LED data
-		};
-	};
-
-	spi3_sleep: spi3_sleep {
-		group1 {
-			psels = <NRF_PSEL(SPIM_MOSI, 0, 14)>;
-			low-power-enable;
-		};
+		color-mapping = <LED_COLOR_ID_GREEN LED_COLOR_ID_RED LED_COLOR_ID_BLUE>;
 	};
 };
