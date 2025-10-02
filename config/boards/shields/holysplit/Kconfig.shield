@@ -1,0 +1,8 @@
+# Copyright (c) 2024
+# SPDX-License-Identifier: MIT
+
+config SHIELD_HOLYSPLIT_LEFT
+	def_bool $(shields_list_contains,holysplit_left)
+
+config SHIELD_HOLYSPLIT_RIGHT
+	def_bool $(shields_list_contains,holysplit_right)
